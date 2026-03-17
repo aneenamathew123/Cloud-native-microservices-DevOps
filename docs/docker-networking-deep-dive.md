@@ -39,7 +39,7 @@ instead of IP adresses.
 
 ## Output of docker network inspect showing container IP allocation in 172.18.0.0/16 subnet.
 
-![Docker Network Inspect](images/Screenshot-networking.png)
+![Docker Network Inspect](../images/Screenshot-networking.png)
 
 
 ## Docker Networking Architecture for Opentelemetry application:
@@ -47,4 +47,4 @@ instead of IP adresses.
 Each services run its own network namespaces and connected to the user defined opentelemetry-demo network through
 a Veth pair.
 
-![Docker Networking Architecture](./images/Networking.jpg) 
+![Docker Networking Architecture](../images/Networking.jpg) 
