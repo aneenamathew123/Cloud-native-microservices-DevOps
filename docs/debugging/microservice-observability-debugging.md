@@ -2,7 +2,7 @@
 
 I introduced a resource constraint on Frontend service to understand the failure behavior in a microservice system,
 For that the memory limit for the Frontend service is reduced from 250MB to 10MB.
-This experiment simulates a real-world production issue and demostrates, how observability tools like Jaeger helps
+This experiment simulates a real-world production issue and demonstrates, how observability tools like Jaeger helps
 to identify the root cause of the problem.
 
 ## Observations:
@@ -15,7 +15,7 @@ to identify the root cause of the problem.
 
 ![Docker Compose Analysis](../../images/Docker-analysis-frontend-failure.png)
  
-This confirms that the container was termintaed by the system due to memory exhaustion. 
+This confirms that the container was terminated by the system due to memory exhaustion. 
 
 ## The output of Jaeger Trace analysis:
 
