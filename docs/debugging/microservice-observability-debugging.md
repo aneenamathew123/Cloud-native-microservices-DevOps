@@ -11,13 +11,13 @@ to identify the root cause of the problem.
 - The Frontend container crashed repeatedly
 - The RestartCount of the Frontend service increased significantly
 
-## The output of Docker compose analysis using terminal(screenshots):
+## The output of Docker compose analysis using terminal:
 
 ![Docker Compose Analysis](../../images/Docker-analysis-frontend-failure.png)
  
 This confirms that the container was termintaed by the system due to memory exhaustion. 
 
-## The output of Jaeger Trace analysis(Screenshot):
+## The output of Jaeger Trace analysis:
 
 - HTTP status code: 503
 - Error observed at frontend-proxy
