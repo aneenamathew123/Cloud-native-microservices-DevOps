@@ -15,19 +15,20 @@ was unable to resolve or reach the product-catalog service through Docker intern
 
 ## Root Cause Analysis:
 - The product catalog service expects product data during startup.
-In the minimal stack configuration, the database service was disabled to reduce resource usage,
-Since the service couldn't retrieve product data, the application exited during initialization and caused 
-the Docker DNS resolution problem
+In the minimal stack configuration, the database service was disabled to reduce resource usage.
+As a result the product-catalog service couldn't retrieve product data, causing the application to exit during initialization.
+Since the product-catalog container was not running, Docker didn't register it in the internal DNS. This led to Docker DNS resolution problem
+observed by the frontend service.
 
 ## Fix:
-- Ensure that the product-catalog service has access to product data either by enabling the required database dependency, or
-populating the products directory with the required JSON files.Once the service starts successfully, Docker DNS can 
-resolve the service name correctly
+- Ensured that the product-catalog service has access to product data by enabling the required database dependency, or
+populating the products directory with the required JSON files. Once the service started successfully, Docker registers it in
+the internal DNS and allowed frontend service to resolve it correctly.
 
 ## Key Takeaways:
 
-- Docker DNS only resolves running containers
+- Docker DNS only resolves running containers on the network.
 - Container exit codes are useful for diagnosing startup failures
 - Service discovery errors often originate from downstream service crashes
-- Checking service dependencies is an important step when troubleshooting distributed systems.
+- Checking service dependencies is significant when troubleshooting distributed systems.
  
