@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: opentelemetry-demo-productcatalogservice
+  labels:
+    opentelemetry.io/name: opentelemetry-demo-productcatalogservice
+    app.kubernetes.io/name: opentelemetry-demo-productcatalogservice
+    app.kubernetes.io/instance: opentelemetry-demo
+    app.kubernetes.io/component: productcatalogservice
+    app.kubernetes.io/part-of: opentelemetry-demo
+spec:
+  type: ClusterIP
+  selector:
+    opentelemetry.io/name: opentelemetry-demo-productcatalogservice
+  ports:
+  - port: 8088
+    targetPort: 8088
+    name: tcp-service
+    protocol: TCP

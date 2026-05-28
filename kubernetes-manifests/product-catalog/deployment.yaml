@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opentelemetry-demo-productcatalogservice
+  labels: 
+    opentelemetry.io/name: opentelemetry-demo-productcatalogservice
+    app.kubernetes.io/name: opentelemetry-demo-prodcutcatalogservice
+    app.kubernetes.io/instance: opentelemetry-demo
+    app.kubernetes.io/component: productcatalogservice
+    app.kubernetes.io/part-of: opentelemetry-demo
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5    ## how many replicasets kubernetes keeps for rollback ie, last 5 versions of deployment.
+  strategy:
+    type: RollingUpdate      ## controls kuberenetes replaces old pods with new pods  during deployment.
+    rollingUpdate:
+      maxUnavailable: 0  
+      maxSurge: 1              ## achieves non-zero downtime.
+  selector: 
+    matchLabels:
+      opentelemetry.io/name: opentelemetry-demo-productcatalogservice
+      
+  template:
+    metadata:
+      labels:
+        opentelemetry.io/name: opentelemetry-demo-productcatalogservice
+        app.kubernetes.io/name: opentelemetry-demo-prodcutcatalogservice
+        app.kubernetes.io/instance: opentelemetry-demo
+        app.kubernetes.io/component: productcatalogservice
+        
+    spec:
+      serviceAccountName: opentelemetry-demo
+      containers:
+      - name: productcatalogservice
+        image: 'ghcr.io/open-telemetry/demo:1.12.0-productcatalogservice'
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8088   # named ports
+          name: service
+        env:
+        - name: OTEL_SERVICE_NAME
+          valueFrom:
+              fieldRef:
+                fieldPath: metadata.labels['app.kubernetes.io/name']  # Downward API to read metadata label of pods and kubernetes injects into container 
+        - name: PRODUCT_CATALOG_PORT                                                                                                        ## runtime environment
+          value: "8088"
+        - name: PRODUCT_CATALOG_RELOAD_INTERVAL
+          value: "5s"
+        - name: FLAGD_HOST
+          value: flagd
+        - name: FLAGD_PORT
+          value: "8013"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://otel-collector:4317
+        - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+          value: cumulative
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: service.name=${OTEL_SERVICE_NAME},service.namespace=opentelemetry-demo
+        resources:
+          requests:
+            memory: "20Mi"
+          limits:
+            memory: "100Mi"
+        
+
+
