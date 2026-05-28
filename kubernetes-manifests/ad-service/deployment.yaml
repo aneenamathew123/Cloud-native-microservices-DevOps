@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name : opentelemetry-demo-adservice
+  labels:
+    opentelemetry.io/name: opentelemetry-demo-adservice
+    app.kubernetes.io/name: opentelemetry-demo-adservice
+    app.kubernetes.io/instance: opentelemetry-demo
+    app.kubernetes.io/component: adservice
+    app.kubernetes.io/part-of: opentelemetry-demo
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opentelemetry-demo-adservice
+  template:
+    metadata:
+      labels:
+        opentelemetry.io/name: opentelemetry-demo-adservice
+        app.kubernetes.io/name: opentelemetry-demo-adservice
+        app.kubernetes.io/instance: opentelemetry-demo
+        app.kubernetes.io/component: adservice
+    spec:
+      serviceAccountName: opentelemetry-demo
+      containers:
+      - name: adservice
+        image: 'ghcr.io/open-telemetry/demo:1.12.0-adservice'
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: service
+        env:
+        - name: OTEL_SERVICE_NAME
+          valueFrom:
+           fieldRef:
+              fieldPath: metadata.label['app.kubernetes.io/name']
+        - name: AD_PORT
+          value: "8080"
+        - name: FLAGD_HOST
+          value: flagd
+        - name: FLAGD_PORT
+          value: "8013"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://otel-collector:4317
+        - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+          value: cumulative
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: service.name=${OTEl_SERVICE_NAME},service.namespace=opentelemetry-demo
+        - name: OTEL_LOGS_EXPORTER
+          value: otlp
+        resources:
+          requests:
+            memory: "20Mi"
+          limits:
+            memory: "300Mi"
+            
+          
+        
+
+  
