@@ -31,18 +31,18 @@ jobs:
           uses: gradle/actions/setup-gradle@v6
 
         - name: Build with Gradle
-          working-directory: ad-service
+          working-directory: containerization/ad-service
           run: ./gradlew build
 
         - name: Setup unit tests and coverage
-          working-directory: ad-service
+          working-directory: containerization/ad-service
           run: ./gradlew clean test jacocoTestReport
 
         - name: Upload test coverage report
           uses: actions/upload-artifact@v4
           with:
             name: jacoco report   #java code coverage report
-            path: ad-service/build/reports/jacoco/test/html
+            path: containerization/ad-service/build/reports/jacoco/test/html
 
     Code-Quality-Check:
       runs-on: ubuntu-latest
@@ -60,7 +60,7 @@ jobs:
           uses: gradle/actions/setup-gradle@v6
 
         - name: Java linting
-          working-directory: ad-service
+          working-directory: containerization/ad-service
           run: ./gradlew check
 
 
@@ -90,7 +90,7 @@ jobs:
         - name: Build image locally
           uses: docker/build-push-action@v5
           with:
-            context: ad-service
+            context: containerization/ad-service
             load: true # load image to local daemon
             tags: ad-service:${{ github.sha }}
 
@@ -105,7 +105,7 @@ jobs:
         - name: Build and push
           uses: docker/build-push-action@v5
           with:
-            context: ad-service
+            context: containerization/ad-service
             push: true  
             tags: ghcr.io/${{ github.repository_owner }}/ad-service:${{ github.sha }}
 
