@@ -19,7 +19,7 @@ RUN ./gradlew installDist -PprotoSourceDir=/usr/src/app/pb
 
 ########################################################
 
-FROM gcr.io/distroless/java21-debian12 AS release
+FROM eclipse-temurin:21-jre-alpine AS release 
 
 WORKDIR /usr/src/app
 
