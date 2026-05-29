@@ -32,7 +32,7 @@ jobs:
 
         - name: Build with Gradle
           working-directory: src/ad-service
-          run: ./gradlew build
+          run: ./gradlew build -PprotoSourceDir=${{ github.workspace }}/src/ad-service/pb
 
         - name: Setup unit tests and coverage
           working-directory: src/ad-service
