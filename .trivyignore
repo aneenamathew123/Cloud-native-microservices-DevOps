@@ -1,0 +1,11 @@
+# .trivyignore
+
+# CVE-2023-45853 — zlib1g (C compression library)
+# Severity: CRITICAL
+# Status: will_not_fix — Debian maintainers explicitly decided not to patch
+# Reason: vulnerable function zipOpenNewFileInZip4_6 is not reachable in JVM runtime
+# Base image: gcr.io/distroless/java21-debian12
+# Reviewed by: Aneena Mathew
+# Date: 2026-05-29
+# Re-evaluate: on next base image update
+CVE-2023-45853
