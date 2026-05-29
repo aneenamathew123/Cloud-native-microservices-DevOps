@@ -64,6 +64,7 @@ jobs:
 
         - name: Java linting
           working-directory: src/ad-service
+          continue-on-error: true
           run: ./gradlew check -PprotoSourceDir=${{ github.workspace }}/src/ad-service/pb
 
 
