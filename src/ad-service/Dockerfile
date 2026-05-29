@@ -23,7 +23,7 @@ FROM gcr.io/distroless/java21-debian12 AS release
 
 WORKDIR /usr/src/app
 
-COPY --from=builder /usr/src/app ./
+COPY --from=builder /usr/src/app/build/install/opentelemetry-demo-ad .
 
 ENV AD_PORT=8080
 
