@@ -39,7 +39,7 @@ jobs:
 
         - name: Setup unit tests and coverage
           working-directory: src/ad-service
-          run: ./gradlew clean test jacocoTestReport
+          run: ./gradlew clean test jacocoTestReport -PprotoSourceDir=${{ github.workspace }}/src/ad-service/pb
 
         - name: Upload test coverage report
           uses: actions/upload-artifact@v4
@@ -64,7 +64,7 @@ jobs:
 
         - name: Java linting
           working-directory: src/ad-service
-          run: ./gradlew check
+          run: ./gradlew check -PprotoSourceDir=${{ github.workspace }}/src/ad-service/pb
 
 
     Docker-Build:
