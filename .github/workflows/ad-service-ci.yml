@@ -99,7 +99,7 @@ jobs:
             tags: ad-service:${{ github.sha }}
 
         - name: Run trivy vulnerability scan on local image
-          uses: aquasecurity/trivy-action@0.28.0
+          uses: aquasecurity/trivy-action@v0.36.0
           with:
             image-ref: ad-service:${{ github.sha }}
             format: 'table'
