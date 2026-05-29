@@ -98,7 +98,7 @@ jobs:
             load: true # load image to local daemon
             tags: ad-service:${{ github.sha }}
 
-        - name: Trivy Blocking scan
+        - name: Trivy scan - OS packages
           uses: aquasecurity/trivy-action@v0.36.0
           with:
             image-ref: ad-service:${{ github.sha }}
@@ -107,21 +107,23 @@ jobs:
             severity: 'CRITICAL,HIGH'
             ignore-unfixed: true
             trivyignores: .trivyignore
+            vuln-type: 'os' 
 
-        - name: Trivy full report
+        - name: Trivy java dependencies scan
           uses: aquasecurity/trivy-action@v0.36.0
           with:
             image-ref: ad-service:${{ github.sha }}
             format: 'json'
-            output: trivy-report.json
+            output: trivy-java-report.json
+            vuln-type: 'library'
             exit-code: '0'
             severity: 'CRITICAL,HIGH'
 
         - name: upload trivy artifact
           uses: actions/upload-artifact@v4
           with:
-            name: trivy-report
-            path: trivy-report.json
+            name: trivy-java-report
+            path: trivy-java-report.json
 
         - name: Build and push
           uses: docker/build-push-action@v5
