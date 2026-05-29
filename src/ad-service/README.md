@@ -43,4 +43,4 @@ From the root of `opentelemetry-demo`, run:
 ```sh
 docker build --file ./src/ad/Dockerfile ./
 ```
-## test CI pipeline
+## test the CI workflow using github actions
