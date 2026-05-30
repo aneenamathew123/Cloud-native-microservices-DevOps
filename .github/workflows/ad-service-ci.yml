@@ -168,6 +168,7 @@ jobs:
                 git remote set-url origin https://x-access-token:${{ secrets.GIT_PAT }}@github.com/${{ github.repository }}
                 git add kubernetes-manifests/ad-service/deployment.yaml
                 git commit -m "[CI]: Update ad-service image tag" || echo "No changes to commit"
+                git pull origin ${{ github.ref_name }} --rebase  
                 git push origin HEAD:${{ github.head_ref || github.ref_name }}  
                 
                 
