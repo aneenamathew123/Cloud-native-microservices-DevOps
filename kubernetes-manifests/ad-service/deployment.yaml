@@ -31,7 +31,7 @@ spec:
       serviceAccountName: opentelemetry-demo
       containers:
       - name: adservice
-        image: ghcr.io/aneenamathew123/ad-service:b73e05cae962311dff025c8d695687fc9f80d62c
+        image: ghcr.io/aneenamathew123/ad-service:b28fc89ecef9b350b5a21355b15ac2043e05bbbe
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
