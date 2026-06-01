@@ -44,3 +44,4 @@ From the root of `opentelemetry-demo`, run:
 docker build --file ./src/ad/Dockerfile ./
 ```
 ## test CI workflow 
+## test the image update
