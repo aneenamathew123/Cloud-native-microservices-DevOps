@@ -43,4 +43,4 @@ From the root of `opentelemetry-demo`, run:
 ```sh
 docker build --file ./src/ad/Dockerfile ./
 ```
-## test CI workflow 
+## trigger the CI workflow
