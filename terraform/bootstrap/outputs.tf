@@ -9,7 +9,12 @@ output "aws_dynamodb_table" {
   
 }
 
-output "github_actions_role_arn" {
-  value = aws_iam_role.github_actions_role.arn
-  description = "ARN of the IAM role for github actions"
+output "github_actions_apply_role_arn" {
+  value = aws_iam_role.github_actions_apply_role.arn
+  description = "ARN of the infrastructure in aws"
+}
+
+output "github_actions_platform_role_arn" {
+  value = aws_iam_role.github_actions_platform_role.arn
+  description = "ARN of the platform layer in aws"
 }
