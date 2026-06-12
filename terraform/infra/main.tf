@@ -1,11 +1,3 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.0"
-    }
-  }
-}
 module "vpc" {
   source               = "./modules/vpc"
   cluster_name         = var.cluster_name
