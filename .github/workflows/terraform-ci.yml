@@ -1,0 +1,120 @@
+name: infra-platform-ci
+on:
+    push:
+      branches: ['main']
+      paths:
+        - 'terraform/infra/**'
+        - 'terraform/platform/**'
+    pull_request:
+      paths:
+        - 'terraform/infra/**'
+        - 'terraform/platform/**'
+        
+jobs:
+    Infra-plan:
+      if : github.event_name == 'pull_request'
+      runs-on: ubuntu-latest
+      permissions:
+        id-token: write
+        contents: read
+
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+
+        - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@v4
+          with:
+           aws-region: eu-central-1
+           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID}}:role/github-actions-plan-role
+           
+
+        - name: Setup Terraform  
+          uses: hashicorp/setup-terraform@v4
+          with:
+           terraform_version: "1.14.6"
+
+        - name: Terraform Init
+          working-directory: terraform/infra
+          run: terraform init
+
+        - name: Terraform Plan
+          working-directory: terraform/infra
+          run: terraform plan -out=tfplan
+
+        - name: Upload artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: infra-tfplan
+            path: terraform/infra/tfplan
+
+    Infra-apply:
+      if : github.event_name == 'push' && github.ref == 'refs/heads/main'
+      runs-on: ubuntu-latest  
+      permissions:
+        id-token: write
+        contents: read
+
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+
+        - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@v4
+          with:
+           aws-region: eu-central-1
+           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID}}:role/github-actions-apply-role
+           
+        - name: Setup Terraform  
+          uses: hashicorp/setup-terraform@v4
+          with:
+           terraform_version: "1.14.6"
+        
+        - name: Terraform Init
+          working-directory: terraform/infra
+          run: terraform init
+
+        - name: Terraform plan & apply
+          working-directory: terraform/infra
+          run: |
+                 terraform plan -out=tfplan
+                 terraform apply tfplan
+    
+
+    Platform:
+       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+       runs-on: ubuntu-latest
+       needs: Infra-apply
+       permissions:
+         id-token: write
+         contents: read
+
+    
+       steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+
+        - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@v4
+          with:
+           aws-region: eu-central-1
+           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID}}:role/github-actions-platform-role
+           
+
+        - name: Setup Terraform  
+          uses: hashicorp/setup-terraform@v4
+          with:
+           terraform_version: "1.14.6"
+
+        - name: Terraform Init
+          working-directory: terraform/platform
+          run: terraform init
+
+        - name: Terraform Plan & apply
+          working-directory: terraform/platform
+          run: |
+                terraform plan -out=tfplan
+                terraform apply tfplan
+
+     
+          
