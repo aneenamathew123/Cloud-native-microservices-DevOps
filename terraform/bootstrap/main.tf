@@ -249,7 +249,9 @@ resource "aws_iam_policy" "github_actions_plan_policy" {
         Effect = "Allow"
 
         Action = [
-          "dynamodb:GetItem"
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem"
         ]
 
         Resource = aws_dynamodb_table.tfstate_locks.arn
