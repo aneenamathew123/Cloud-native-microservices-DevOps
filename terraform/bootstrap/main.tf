@@ -195,6 +195,14 @@ resource "aws_iam_policy" "github_actions_apply_policy" {
       {
         Effect = "Allow"
         Action = [
+          "iam:CreateServiceLinkedRole"
+       ]
+        Resource = "arn:aws:iam::*:role/aws-service-role/eks.amazonaws.com/*"
+      },
+
+      {
+        Effect = "Allow"
+        Action = [
           "iam:PassRole","iam:CreateRole","iam:DeleteRole",
           "iam:AttachRolePolicy","iam:DetachRolePolicy",
           "iam:PutRolePolicy","iam:DeleteRolePolicy",
