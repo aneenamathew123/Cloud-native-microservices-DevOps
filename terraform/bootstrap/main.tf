@@ -70,8 +70,11 @@ resource "aws_dynamodb_table" "tfstate_locks"{
 
 
 }
-##Github's OIDC token issuer.
 
+data "aws_caller_identity" "current" {}
+
+
+##Github's OIDC token issuer.
 resource "aws_iam_openid_connect_provider" "github_oidc" {
   url = "https://token.actions.githubusercontent.com"
   client_id_list = ["sts.amazonaws.com"]
@@ -95,7 +98,7 @@ resource "aws_iam_role" "github_actions_plan_role" {
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
       "StringEquals": {
-         "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+         "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
          "token.actions.githubusercontent.com:sub": "repo:aneenamathew123/Cloud-native-microservices-DevOps:pull_request"
           }
         }
@@ -119,7 +122,7 @@ resource "aws_iam_role" "github_actions_apply_role" {
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
       "StringEquals": {
-         "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+         "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
          "token.actions.githubusercontent.com:sub": "repo:aneenamathew123/Cloud-native-microservices-DevOps:ref:refs/heads/main"
                 }
             }
@@ -142,7 +145,7 @@ resource "aws_iam_role" "github_actions_platform_role" {
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
       "StringEquals": {
-         "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+         "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
          "token.actions.githubusercontent.com:sub": "repo:aneenamathew123/Cloud-native-microservices-DevOps:ref:refs/heads/main"
                 }
             }
@@ -163,7 +166,7 @@ resource "aws_iam_policy" "github_actions_apply_policy" {
           "ec2:*",           
           "eks:*",                      
           "logs:*",          
-          "autoscaling:*",   
+          "autoscaling:*"  
 
           
         ]
@@ -197,7 +200,19 @@ resource "aws_iam_policy" "github_actions_apply_policy" {
         Action = [
           "iam:CreateServiceLinkedRole"
        ]
-        Resource = "arn:aws:iam::*:role/aws-service-role/eks.amazonaws.com/*"
+        
+        Resource = [ "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/eks.amazonaws.com/*",
+                "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/eks-nodegroup.amazonaws.com/*" ]
+        
+        Condition = {
+          StringLike = {
+            "iam:AWSServiceName" = [
+              "eks.amazonaws.com",
+              "eks-nodegroup.amazonaws.com", 
+            ]
+
+            }
+           },
       },
 
       {
@@ -206,9 +221,23 @@ resource "aws_iam_policy" "github_actions_apply_policy" {
           "iam:PassRole","iam:CreateRole","iam:DeleteRole",
           "iam:AttachRolePolicy","iam:DetachRolePolicy",
           "iam:PutRolePolicy","iam:DeleteRolePolicy",
-          "iam:GetRole","iam:ListAttachedRolePolicies","iam:ListRolePolicies",
+          "iam:GetRole","iam:ListAttachedRolePolicies","iam:ListRolePolicies"
         ]
-        Resource = "arn:aws:iam::*:role/opentelemetry-*"
+        Resource = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/opentelemetry-*"
+      },
+      # service-linked roles, so EKS can validate they exist
+      {
+        Effect = "Allow"
+        Action = [
+          "iam:GetRole",
+          "iam:ListAttachedRolePolicies",
+          "iam:ListRolePolicies"
+        ]
+        Resource = [
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/eks.amazonaws.com/*",
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/eks-nodegroup.amazonaws.com/AWSServiceRoleForAmazonEKSNodegroup",
+        
+        ]
       }
     ]
   })
@@ -276,34 +305,37 @@ resource "aws_iam_policy" "github_actions_platform_policy" {
     Statement = [
 
       {
-        "Effect": "Allow",
-       "Action": [
+        Effect = "Allow",
+        Action = [
          "eks:DescribeCluster",
          "eks:ListClusters"
-     ]
-       "Resource": "*"
-     }, 
+        ]
+        Resource = "*"
+      }, 
 
-      {
-      "Effect": "Allow",
-      "Action": "iam:PassRole",
-      "Resource": "arn:aws:iam::*:role/opentelemetry-*"
-    },
+      { 
+
+       Effect = "Allow",
+       Action = "iam:PassRole",
+       Resource = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/opentelemetry-*"
+
+      },
+
      {
-      "Effect" = "Allow"
+       Effect = "Allow"
        Action = [
         "s3:GetObject",
         "s3:PutObject",
         "s3:ListBucket"
-       ]
+        ]
          Resource = [
           aws_s3_bucket.tfstate.arn,
          "${aws_s3_bucket.tfstate.arn}/*"
-      ]
+        ]
     },
 
      {
-      "Effect" = "Allow"
+       Effect = "Allow"
        Action = [
         "dynamodb:GetItem",
         "dynamodb:PutItem",
@@ -311,6 +343,7 @@ resource "aws_iam_policy" "github_actions_platform_policy" {
        ]
        Resource = aws_dynamodb_table.tfstate_locks.arn
      }
+
     ]
   })
 }

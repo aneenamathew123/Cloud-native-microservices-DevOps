@@ -33,6 +33,9 @@ depends_on = [aws_iam_role_policy_attachment.EKS_cluster_role_attachment]
 
 
 }
+
+data "aws_caller_identity" "current" {}
+
 #create an iam role for EKS node group to manage worker nodes.
 resource "aws_iam_role" "EKS_node_group_role" {
     name = "${var.cluster_name}-eks-node-group-role"
@@ -79,7 +82,8 @@ resource "aws_eks_node_group" "EKS_node_group" {
     id = aws_launch_template.EKS_node_group_launch_template[each.key].id
     version = "$Latest"
   }
-  depends_on = [aws_iam_role_policy_attachment.EKS_node_group_role_attachment]
+  depends_on = [aws_iam_role_policy_attachment.EKS_node_group_role_attachment,
+                  aws_iam_service_linked_role.EKS_node_group_linked_role]
 }
 
 resource "aws_launch_template" "EKS_node_group_launch_template" {
@@ -96,4 +100,9 @@ resource "aws_launch_template" "EKS_node_group_launch_template" {
   lifecycle {
     create_before_destroy = true
   }
+}
+
+resource "aws_iam_service_linked_role" "EKS_node_group_linked_role" {
+  aws_service_name = "eks-nodegroup.amazonaws.com"
+  description      = "Service linked role for EKS node groups"
 }
