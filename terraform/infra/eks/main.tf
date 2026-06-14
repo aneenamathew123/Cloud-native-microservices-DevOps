@@ -83,7 +83,7 @@ resource "aws_eks_node_group" "EKS_node_group" {
     version = "$Latest"
   }
   depends_on = [aws_iam_role_policy_attachment.EKS_node_group_role_attachment,
-                  aws_iam_service_linked_role.EKS_node_group_linked_role]
+                  aws_iam_service_linked_role.EKS_node_group_linked_role, kubernetes_config_map_v1_data.aws_auth]
 }
 
 resource "aws_launch_template" "EKS_node_group_launch_template" {
@@ -106,3 +106,25 @@ resource "aws_iam_service_linked_role" "EKS_node_group_linked_role" {
   aws_service_name = "eks-nodegroup.amazonaws.com"
   description      = "Service linked role for EKS node groups"
 }
+
+resource "kubernetes_config_map_v1_data" "aws_auth" {
+  depends_on = [aws_eks_cluster.EKS_cluster]
+  metadata {
+    name = "aws-auth"
+    namespace = "kube-system"
+  }
+
+  data = {
+    maproles = yamlencode([
+      {
+      rolearn = aws_iam_role.EKS_node_group_role.arn
+      username = "system:node:{{EC2PrivateDNSName}}"
+      groups = ["system:bootstrappers", "system:nodes"]
+      }
+
+    ])
+
+    }
+  }
+
+
