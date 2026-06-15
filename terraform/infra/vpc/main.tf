@@ -104,3 +104,4 @@ resource "aws_security_group" "opentelemetry_node_sg" {
   }
 
 }
+

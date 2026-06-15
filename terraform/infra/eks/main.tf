@@ -83,7 +83,8 @@ resource "aws_eks_node_group" "EKS_node_group" {
     version = "$Latest"
   }
   depends_on = [aws_iam_role_policy_attachment.EKS_node_group_role_attachment,
-                  aws_iam_service_linked_role.EKS_node_group_linked_role, kubernetes_config_map_v1_data.aws_auth]
+                  aws_iam_service_linked_role.EKS_node_group_linked_role, 
+                  kubernetes_config_map_v1_data.aws_auth, aws_security_group_rule.cluster_ingress_from_nodes]
 }
 
 resource "aws_launch_template" "EKS_node_group_launch_template" {
@@ -127,4 +128,14 @@ resource "kubernetes_config_map_v1_data" "aws_auth" {
     }
   }
 
+resource "aws_security_group_rule" "cluster_ingress_from_nodes"{
+  type         = "ingress"
+  from_port    = 443
+  to_port      = 443
+  protocol     = "tcp"
+  security_group_id        = aws_eks_cluster.EKS_cluster.vpc_config[0].cluster_security_group_id
+  source_security_group_id = var.node_security_group_id
+  description              = "Allow nodes to reach control plane API"
+
+}
 
