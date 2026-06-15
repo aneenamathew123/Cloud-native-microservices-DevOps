@@ -1,7 +1,7 @@
 vpc_cidr            = "10.0.0.0/16"
 private_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
 public_subnet_cidrs  = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
-availability_zones         = ["eu-central-1a", "eu-central-1b", "eu-central-1c", "eu-central-1d"]
+availability_zones         = ["eu-central-1a", "eu-central-1b", "eu-central-1c"]
 cluster_name               = "opentelemetry-kubernetes-cluster"
 node_groups = {
   general = {
