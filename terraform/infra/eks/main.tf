@@ -84,7 +84,7 @@ resource "aws_eks_node_group" "EKS_node_group" {
   }
   depends_on = [aws_iam_role_policy_attachment.EKS_node_group_role_attachment,
                   aws_iam_service_linked_role.EKS_node_group_linked_role, 
-                  kubernetes_config_map_v1_data.aws_auth, aws_security_group_rule.cluster_ingress_from_nodes]
+                  kubernetes_config_map_v1.aws_auth, aws_security_group_rule.cluster_ingress_from_nodes]
 }
 
 resource "aws_launch_template" "EKS_node_group_launch_template" {
@@ -108,7 +108,7 @@ resource "aws_iam_service_linked_role" "EKS_node_group_linked_role" {
   description      = "Service linked role for EKS node groups"
 }
 
-resource "kubernetes_config_map_v1_data" "aws_auth" {
+resource "kubernetes_config_map_v1" "aws_auth" {
   depends_on = [aws_eks_cluster.EKS_cluster]
   metadata {
     name = "aws-auth"
@@ -116,16 +116,23 @@ resource "kubernetes_config_map_v1_data" "aws_auth" {
   }
 
   data = {
-    maproles = yamlencode([
-      {
-      rolearn = aws_iam_role.EKS_node_group_role.arn
+  mapRoles = yamlencode([
+    {
+      rolearn  = aws_iam_role.EKS_node_group_role.arn
       username = "system:node:{{EC2PrivateDNSName}}"
-      groups = ["system:bootstrappers", "system:nodes"]
-      }
-
-    ])
-
+      groups   = ["system:bootstrappers", "system:nodes"]
     }
+  ])
+
+  mapUsers = yamlencode([
+    {
+      userarn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/terraform-local"
+      username = "terraform-local"
+      groups   = ["system:masters"]
+    }
+  ])
+   }
+
   }
 
 resource "aws_security_group_rule" "cluster_ingress_from_nodes"{
