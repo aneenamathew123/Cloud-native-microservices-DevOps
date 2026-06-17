@@ -39,8 +39,9 @@ spec:
         env:
         - name: OTEL_SERVICE_NAME
           valueFrom:
-           fieldRef:
-              fieldPath: metadata.label['app.kubernetes.io/name']
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.labels['app.kubernetes.io/component']
         - name: AD_PORT
           value: "8080"
         - name: FLAGD_HOST
