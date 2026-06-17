@@ -24,8 +24,6 @@ resource "kubectl_manifest" "root_app" {
     namespace: argocd
     finalizers:
         - resources-finalizer.argocd.argoproj.io
-    labels:
-        argocd.argoproj.io/instance: root-app
   spec:
     project: default
     source:
@@ -42,3 +40,4 @@ resource "kubectl_manifest" "root_app" {
   YAML
 
 }
+
