@@ -121,6 +121,11 @@ resource "kubernetes_config_map_v1" "aws_auth" {
       rolearn  = aws_iam_role.EKS_node_group_role.arn
       username = "system:node:{{EC2PrivateDNSName}}"
       groups   = ["system:bootstrappers", "system:nodes"]
+    },
+    {
+      rolearn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/github-actions-platform-role"
+      username = "github-actions-platform"
+      groups   =  ["system:masters"]
     }
   ])
 

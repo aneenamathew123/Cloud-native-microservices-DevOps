@@ -308,10 +308,20 @@ resource "aws_iam_policy" "github_actions_platform_policy" {
         Effect = "Allow",
         Action = [
          "eks:DescribeCluster",
-         "eks:ListClusters"
+         "eks:ListClusters",
+         "eks:AccessKubernetesApi"
         ]
         Resource = "*"
       }, 
+
+      {
+        Effect = "Allow"
+        Action = [
+         "sts:GetCallerIdentity" 
+         ]
+
+        Resource = "*"
+      },
 
       { 
 
