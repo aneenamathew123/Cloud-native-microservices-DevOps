@@ -8,9 +8,9 @@ node_groups = {
     capacity_type  = "ON_DEMAND"
     instance_types = ["t3.small"]
     scaling_config = {
-      desired_size = 2
-      max_size     = 2
-      min_size     = 1
+      desired_size = 4
+      max_size     = 4
+      min_size     = 2
     }
 
   }
