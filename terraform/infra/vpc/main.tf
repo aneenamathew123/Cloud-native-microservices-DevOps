@@ -118,15 +118,6 @@ resource "aws_security_group" "opentelemetry_node_sg" {
   name = "${var.cluster_name}-node-sg"
   vpc_id = aws_vpc.opentelemetry_app_vpc.id
   
-  ingress {
-    description = "node to node and control plane communication"
-    from_port   = 0
-    to_port     = 65535
-    protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr]
-
-  }
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -146,3 +137,22 @@ resource "aws_security_group" "opentelemetry_node_sg" {
 
 }
 
+resource "aws_security_group_rule" "node_self_all_traffic" {
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+  source_security_group_id = aws_security_group.opentelemetry_node_sg.id
+  security_group_id        = aws_security_group.opentelemetry_node_sg.id
+  description              = "Allow all traffic between nodes"
+}
+
+resource "aws_security_group_rule" "node_vpc_all_traffic" {
+  type              = "ingress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = [var.vpc_cidr]
+  security_group_id = aws_security_group.opentelemetry_node_sg.id
+  description       = "Allow all traffic from VPC CIDR"
+}
