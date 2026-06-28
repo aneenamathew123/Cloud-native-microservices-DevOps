@@ -42,3 +42,5 @@ resource "kubectl_manifest" "root_app" {
 }
 
 
+
+

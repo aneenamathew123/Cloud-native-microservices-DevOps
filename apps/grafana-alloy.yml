@@ -1,0 +1,123 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana-alloy
+  namespace: argocd
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: alloy
+    targetRevision: 1.8.2
+
+    helm:
+      valuesObject:
+        controller:
+          type: daemonset
+        alloy:
+          extraEnv:
+            - name: METRICS_USER
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-cloud-credentials
+                  key: metricsUser
+
+            - name: LOGS_USER
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-cloud-credentials
+                  key: logsUser
+
+            - name: GRAFANA_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-cloud-credentials
+                  key: grafanaToken
+          configMap:
+            create: true
+            content: |
+              discovery.kubernetes "nodes" {
+                role = "node"
+              }
+
+              discovery.kubernetes "pods" {
+                role = "pod"
+              }
+
+              prometheus.scrape "kubelet_cadvisor" {      ## measure cpu/mem usage
+                targets           = discovery.kubernetes.nodes.targets
+                metrics_path      = "/metrics/cadvisor"
+                scheme            = "https"
+                bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+                tls_config {
+                   ca_file = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+                }
+                forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+                scrape_interval =  "30s"
+              }
+
+              prometheus.scrape "kubelet_metrics" {           ## node health and pod lifecycle
+                targets         = discovery.kubernetes.nodes.targets
+                metrics_path    = "/metrics"
+                scheme          = "https"
+                bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+                tls_config {
+                   ca_file = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+                }
+                forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+                scrape_interval =  "30s"
+              }
+
+              prometheus.remote_write "grafana_cloud" {
+                endpoint {
+                  url = "https://prometheus-prod-65-prod-eu-west-2.grafana.net/api/prom/push"
+
+                  basic_auth {
+                    username = env("METRICS_USER")
+                    password = env("GRAFANA_TOKEN")
+                  }
+                }
+              }
+
+              loki.source.kubernetes "pod_logs" {
+                targets    = discovery.kubernetes.pods.targets
+                forward_to = [loki.process.enrich.receiver]
+              }
+
+              loki.process "enrich" {
+                stage.static_labels {
+                  values = {
+                    source  = "kubernetes"
+                    cluster = "opentelemetry-kubernetes-cluster"
+                  }   
+                }
+                forward_to = [loki.write.grafana_cloud.receiver]
+              }
+              
+              loki.write "grafana_cloud" {
+                endpoint {
+                  url = "https://logs-prod-012.grafana.net/loki/api/v1/push"
+
+                  basic_auth {
+                    username = env("LOGS_USER")
+                    password = env("GRAFANA_TOKEN")
+                  }
+                }
+              }
+              
+
+        rbac:
+          create: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
