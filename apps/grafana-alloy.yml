@@ -46,7 +46,7 @@ spec:
                 role = "pod"
               }
 
-              prometheus.scrape "kubelet_cadvisor" {      ## measure cpu/mem usage
+              prometheus.scrape "kubelet_cadvisor" {      // measure cpu/mem usage
                 targets           = discovery.kubernetes.nodes.targets
                 metrics_path      = "/metrics/cadvisor"
                 scheme            = "https"
@@ -58,7 +58,7 @@ spec:
                 scrape_interval =  "30s"
               }
 
-              prometheus.scrape "kubelet_metrics" {           ## node health and pod lifecycle
+              prometheus.scrape "kubelet_metrics" {           // node health and pod lifecycle
                 targets         = discovery.kubernetes.nodes.targets
                 metrics_path    = "/metrics"
                 scheme          = "https"
@@ -89,8 +89,8 @@ spec:
               loki.process "enrich" {
                 stage.static_labels {
                   values = {
-                    source  = "kubernetes"
-                    cluster = "opentelemetry-kubernetes-cluster"
+                    source  = "kubernetes",
+                    cluster = "opentelemetry-kubernetes-cluster",
                   }   
                 }
                 forward_to = [loki.write.grafana_cloud.receiver]
