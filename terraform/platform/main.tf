@@ -37,6 +37,7 @@ resource "kubectl_manifest" "root_app" {
       automated:
         prune: true
         selfHeal: true
+
   YAML
 
 }
