@@ -44,9 +44,35 @@ spec:
 
               discovery.kubernetes "pods" {
                 role = "pod"
+
+                namespaces {
+                  names = ["opentelemetry-demo"]
+                }
               }
 
-              prometheus.scrape "kubelet_cadvisor" {      // measure cpu/mem usage
+              discovery.relabel "pod_logs"{
+                targets = discovery.kubernetes.pods.targets
+
+                rule {
+                  source_labels = ["__meta_kubernetes_namespace"]
+                  target_label  = "namespace"
+                }
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_name"]
+                  target_label  = "pod"
+                }
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_container_name"]
+                  target_label  = "container"
+                }
+                rule {
+                  source_labels = ["__meta_kubernetes_node_name"]
+                  target_label  = "node"
+                 }
+              }       
+              
+               // measure cpu/mem usage
+              prometheus.scrape "kubelet_cadvisor" {     
                 targets           = discovery.kubernetes.nodes.targets
                 metrics_path      = "/metrics/cadvisor"
                 scheme            = "https"
@@ -58,7 +84,8 @@ spec:
                 scrape_interval =  "30s"
               }
 
-              prometheus.scrape "kubelet_metrics" {           // node health and pod lifecycle
+              // node health and pod lifecycle
+              prometheus.scrape "kubelet_metrics" {           
                 targets         = discovery.kubernetes.nodes.targets
                 metrics_path    = "/metrics"
                 scheme          = "https"
@@ -82,7 +109,7 @@ spec:
               }
 
               loki.source.kubernetes "pod_logs" {
-                targets    = discovery.kubernetes.pods.targets
+                targets    = discovery.relabel.pod_logs.output
                 forward_to = [loki.process.enrich.receiver]
               }
 
